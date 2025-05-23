@@ -1,0 +1,772 @@
+Creating visualisations and chatbot implementation
+
+me: i'm using matplotlib.pyplot to create weather visualizations. Here’s my current code for plotting temperature and precipitation:
+import matplotlib.pyplot as plt
+
+def create_temperature_visualisation(weather_data):
+    forecast_data = weather_data.get('forecast', [])
+    dates = [day['date'] for day in forecast_data]
+    min_temps = [day['min_temp_C'] for day in forecast_data]
+    max_temps = [day['max_temp_C'] for day in forecast_data]
+
+    plt.plot(dates, min_temps, label='Min Temp (°C)')
+    plt.plot(dates, max_temps, label='Max Temp (°C)')
+    plt.xlabel('Date')
+    plt.ylabel('Temperature (°C)')
+    plt.title('Temperature Forecast')
+    plt.legend()
+    plt.show()
+
+
+def create_precipitation_visualisation(weather_data):
+    forecast_data = weather_data.get('forecast', [])
+    dates = [day['date'] for day in forecast_data]
+    precip_chances = [day.get('precipChance', 0) for day in forecast_data]
+
+    plt.bar(dates, precip_chances)
+    plt.xlabel('Date')
+    plt.ylabel('Precipitation Chance (%)')
+    plt.title('Precipitation Forecast')
+    plt.show()
+
+
+# Example usage
+weather_data = {
+    'location': 'London',
+    'current': {
+        'temperature_C': 15,
+        'condition': 'Clear',
+        'humidity': 80,
+        'wind_speed_kmph': 10
+    },
+    'forecast': [
+        {'date': '2025-05-21', 'min_temp_C': 10, 'max_temp_C': 18, 'precipChance': 20},
+        {'date': '2025-05-22', 'min_temp_C': 11, 'max_temp_C': 20, 'precipChance': 40},
+        {'date': '2025-05-23', 'min_temp_C': 13, 'max_temp_C': 21, 'precipChance': 50},
+        {'date': '2025-05-24', 'min_temp_C': 12, 'max_temp_C': 19, 'precipChance': 30},
+
+can you inclue pseudocode and improve the basic functionality of the visualisation fixing my display issue (visualisations not displaying)
+
+
+ChatGPT said:
+Absolutely! Based on the code you provided, I'll do two things:
+
+    Provide pseudocode to help you understand the structure and logic behind each visualization function.
+
+    Improve the basic functionality by adding debugging output, layout fixes, and error checks to ensure the plots display properly.
+
+🔹 1. Pseudocode (to outline the logic clearly):
+
+Function: create_temperature_visualisation
+
+- Get forecast data from input dictionary
+- Extract:
+    - Dates
+    - Minimum temperatures
+    - Maximum temperatures
+- Create a line plot for min and max temperatures
+- Add labels, title, and legend
+- Display the plot
+
+Function: create_precipitation_visualisation
+
+- Get forecast data from input dictionary
+- Extract:
+    - Dates
+    - Precipitation chances
+- Create a bar chart
+- Add labels, title, and legend
+- Display the plot
+
+🔹 2. Improved Code (with display fixes and basic robustness):
+
+import matplotlib.pyplot as plt
+
+def create_temperature_visualisation(weather_data):
+    forecast_data = weather_data.get('forecast', [])
+    if not forecast_data:
+        print("No forecast data found.")
+        return
+
+    dates = [day['date'] for day in forecast_data]
+    min_temps = [day['min_temp_C'] for day in forecast_data]
+    max_temps = [day['max_temp_C'] for day in forecast_data]
+
+    print("Debug: Dates =", dates)
+    print("Debug: Min Temps =", min_temps)
+    print("Debug: Max Temps =", max_temps)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(dates, min_temps, label='Min Temp (°C)', marker='o', linestyle='--', color='blue')
+    plt.plot(dates, max_temps, label='Max Temp (°C)', marker='o', linestyle='-', color='red')
+    plt.xlabel('Date')
+    plt.ylabel('Temperature (°C)')
+    plt.title('Temperature Forecast')
+    plt.xticks(rotation=45)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def create_precipitation_visualisation(weather_data):
+    forecast_data = weather_data.get('forecast', [])
+    if not forecast_data:
+        print("No forecast data found.")
+        return
+
+    dates = [day['date'] for day in forecast_data]
+    precip_chances = [day.get('precipChance', 0) for day in forecast_data]
+
+    print("Debug: Dates =", dates)
+    print("Debug: Precipitation Chances =", precip_chances)
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(dates, precip_chances, color='skyblue', label='Precipitation Chance (%)')
+    plt.xlabel('Date')
+    plt.ylabel('Precipitation Chance (%)')
+    plt.title('Precipitation Forecast')
+    plt.xticks(rotation=45)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+✅ Fixes and Improvements:
+
+    Debug print statements show what data is being used for plotting.
+
+    Check if forecast data exists, avoiding errors from empty input.
+
+    plt.tight_layout() ensures axis labels and titles don’t get cut off.
+
+    Uses figure size, colors, and legends for a cleaner presentation.
+
+    Ensures plt.show() is always called to actually render the plots.
+
+Let me know if you’d like this converted into a reusable module or expanded to include different chart types or save the plots to files!
+
+
+You said:
+
+my goal is to create a weather aware chatbot with these key features
+
+-Focus on the conversational interface as the primary interaction method
+   - Retrieve and display weather information based on natural language analysis
+  -  Use visualisations to supplement text responses when appropriate
+
+can you help me by writing code for:
+# Define parse_weather_question() and generate_weather_response() here
+def parse_weather_question(question):
+    """
+    Parse a natural language weather question.
+
+    Args:
+        question (str): User's weather-related question
+
+    Returns:
+        dict: Extracted information including location, time period, and weather attribute
+    """
+    pass
+
+can you show an example of how this works
+
+    
+ChatGPT said:
+
+You're heading into a very cool and practical direction: creating a weather-aware chatbot that responds to natural language queries and provides helpful visualizations. Here's how we can structure and begin implementing this.
+🔹 Step 1: parse_weather_question(question)
+
+This function needs to extract intent and entities from a user's natural-language weather query.
+✅ Example Inputs:
+
+    "What's the weather like in London tomorrow?"
+
+    "Show me the temperature forecast for Sydney this weekend."
+
+    "Will it rain in New York on Friday?"
+
+✅ Target Outputs:
+
+You want to extract:
+
+    location: e.g., "London"
+
+    date or time_period: e.g., "tomorrow", "Friday", "weekend"
+
+    attribute: e.g., "temperature", "rain", "humidity"
+
+✅ First Implementation (Basic Version Using Keyword Matching)
+
+import re
+from datetime import datetime, timedelta
+
+def parse_weather_question(question):
+    """
+    Parse a natural language weather question.
+
+    Args:
+        question (str): User's weather-related question
+
+    Returns:
+        dict: Extracted information: location, date/time_period, and weather attribute
+    """
+    question = question.lower()
+
+    # Weather attribute keywords
+    attributes = {
+        'temperature': ['temperature', 'temp', 'hot', 'cold'],
+        'rain': ['rain', 'raining', 'precipitation', 'wet'],
+        'humidity': ['humidity', 'humid'],
+        'wind': ['wind', 'windy']
+    }
+
+    # Extract attribute
+    attribute = 'general'  # fallback
+    for key, words in attributes.items():
+        if any(word in question for word in words):
+            attribute = key
+            break
+
+    # Extract relative date phrases
+    today = datetime.now().date()
+    if "today" in question:
+        time_period = today.isoformat()
+    elif "tomorrow" in question:
+        time_period = (today + timedelta(days=1)).isoformat()
+    elif "weekend" in question:
+        # Assume Sat-Sun of this week
+        days_ahead = (5 - today.weekday()) % 7
+        saturday = today + timedelta(days=days_ahead)
+        sunday = saturday + timedelta(days=1)
+        time_period = f"{saturday.isoformat()} to {sunday.isoformat()}"
+    else:
+        # Look for specific day of week
+        days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        for i, day in enumerate(days):
+            if day in question:
+                day_num = (i - today.weekday()) % 7
+                target_date = today + timedelta(days=day_num)
+                time_period = target_date.isoformat()
+                break
+        else:
+            time_period = 'unspecified'
+
+    # Extract location (very simple: assume after "in <location>")
+    match = re.search(r'in ([a-z\s]+)', question)
+    location = match.group(1).strip().title() if match else None
+
+    return {
+        'location': location,
+        'time_period': time_period,
+        'attribute': attribute
+    }
+
+🔹 Step 2: generate_weather_response(parsed_info, weather_data)
+
+Now that you’ve parsed the user's query, you can respond appropriately by combining weather data and visualization logic.
+✅ Example Usage:
+
+def generate_weather_response(parsed_info, weather_data):
+    """
+    Generate a text (and optionally visual) response based on parsed weather info.
+
+    Args:
+        parsed_info (dict): Parsed question components
+        weather_data (dict): Weather data retrieved for the location
+
+    Returns:
+        str: Natural language weather response
+    """
+    location = parsed_info.get('location')
+    time_period = parsed_info.get('time_period')
+    attribute = parsed_info.get('attribute')
+
+    if 'error' in weather_data:
+        return f"Sorry, I couldn't get the weather for {location}. {weather_data['error']}"
+
+    response = f"Here's the weather in {location}:\n"
+
+    if attribute == 'temperature':
+        temps = [(day['date'], day['min_temp_C'], day['max_temp_C']) for day in weather_data['forecast']]
+        for date, min_temp, max_temp in temps:
+            if time_period in date:
+                response += f"On {date}, temperatures range from {min_temp}°C to {max_temp}°C.\n"
+        # Optional: Add chart
+        create_temperature_visualisation(weather_data)
+    elif attribute == 'rain':
+        rain_forecast = [(day['date'], day.get('precipChance', 0)) for day in weather_data['forecast']]
+        for date, rain_chance in rain_forecast:
+            if time_period in date:
+                response += f"Rain chance on {date} is {rain_chance}%.\n"
+        create_precipitation_visualisation(weather_data)
+    else:
+        # General summary
+        today = weather_data['current']
+        response += (f"Currently {today['condition']} with a temperature of {today['temperature_C']}°C, "
+                     f"humidity at {today['humidity']}% and wind speed of {today['wind_speed_kmph']} km/h.\n")
+
+    return response
+
+✅ Example Integration (Putting It All Together)
+
+print("Ask me about the weather!")
+question = input("You: ")
+parsed = parse_weather_question(question)
+print(f"Parsed Info: {parsed}")
+
+if parsed['location']:
+    weather_data = get_weather_data(parsed['location'])  # assuming your previous `get_weather_data()` function
+    reply = generate_weather_response(parsed, weather_data)
+    print(reply)
+else:
+    print("Sorry, I couldn't figure out the location in your question.")
+
+✅ What's Next?
+
+    Improve NLP:
+
+        You can integrate spaCy or transformers for better intent/entity recognition.
+
+    Handle More Relative Dates:
+
+        Support phrases like “next week”, “in 3 days”, or “this Friday”.
+
+    Visualizations:
+
+        Only generate charts if the user explicitly asks for “show me…” or “graph…” etc.
+
+    Use Text-to-Speech (Optional):
+
+        For a fully voice-enabled chatbot using packages like pyttsx3.
+
+Would you like me to help you test this end-to-end with your current get_weather_data() function and mock data?
+
+me:  i asked 'is it going to rain in perth tomorrow' and this error appeared, what does this mean and how can we fix this
+Parsed Info: None
+
+---------------------------------------------------------------------------
+
+TypeError                                 Traceback (most recent call last)
+
+<ipython-input-53-f93acba222d9> in <cell line: 0>()
+      4 print(f"Parsed Info: {parsed}")
+      5 
+----> 6 if parsed['location']:
+      7     weather_data = get_weather_data(parsed['location'])  # assuming your previous get_weather_data() function
+      8     reply = generate_weather_response(parsed, weather_data)
+
+TypeError: 'NoneType' object is not subscriptable
+
+ChatGPT said:
+
+You're getting the error because parse_weather_question(question) returned None, and you're trying to access it like a dictionary (parsed['location']). This happens because the function doesn’t have a return in all paths (specifically if it can't parse the input properly).
+✅ Fix: Always Return a Dictionary
+
+You should ensure that parse_weather_question() always returns a dictionary, even if it can't extract valid values.
+✅ Updated parse_weather_question() with Safe Return:
+
+import re
+from datetime import datetime, timedelta
+
+def parse_weather_question(question):
+    """
+    Parse a natural language weather question into structured data.
+
+    Args:
+        question (str): User's weather-related question
+
+    Returns:
+        dict: Extracted information including location, time period, and weather attribute
+    """
+    question = question.lower()
+    today = datetime.now().date()
+
+    # Weather attribute keywords
+    attributes = {
+        'temperature': ['temperature', 'temp', 'hot', 'cold'],
+        'rain': ['rain', 'raining', 'precipitation', 'wet'],
+        'humidity': ['humidity', 'humid'],
+        'wind': ['wind', 'windy']
+    }
+
+    # Default attribute
+    attribute = 'general'
+    for key, keywords in attributes.items():
+        if any(word in question for word in keywords):
+            attribute = key
+            break
+
+    # Time detection
+    if "today" in question:
+        time_period = today.isoformat()
+    elif "tomorrow" in question:
+        time_period = (today + timedelta(days=1)).isoformat()
+    elif "weekend" in question:
+        saturday = today + timedelta((5 - today.weekday()) % 7)
+        sunday = saturday + timedelta(1)
+        time_period = f"{saturday.isoformat()} to {sunday.isoformat()}"
+    else:
+        # Match weekday
+        weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        time_period = 'unspecified'
+        for i, day in enumerate(weekdays):
+            if day in question:
+                days_ahead = (i - today.weekday()) % 7
+                target_date = today + timedelta(days=days_ahead)
+                time_period = target_date.isoformat()
+                break
+
+    # Location detection: look for "in [location]"
+    location_match = re.search(r'in ([a-z\s]+)', question)
+    location = location_match.group(1).strip().title() if location_match else None
+
+    return {
+        'location': location,
+        'time_period': time_period,
+        'attribute': attribute
+    }
+
+✅ Fix Your Main Script
+
+Also, modify your script so it handles a missing location gracefully:
+
+print("Ask me about the weather!")
+question = input("You: ")
+parsed = parse_weather_question(question)
+
+print(f"Parsed Info: {parsed}")
+
+if parsed and parsed['location']:
+    weather_data = get_weather_data(parsed['location'])
+    reply = generate_weather_response(parsed, weather_data)
+    print(reply)
+else:
+    print("Sorry, I couldn't understand the location in your question.")
+
+✅ Test Case
+
+Try now:
+
+Input:
+is it going to rain in perth tomorrow
+
+Expected Output of parse_weather_question():
+
+{
+    'location': 'Perth',
+    'time_period': '2025-05-21',  # or tomorrow's date
+    'attribute': 'rain'
+}
+
+Let me know if you want to expand this to handle phrases like “next Tuesday”, “in 3 days”, or locations without “in”!
+
+
+me: using that code, integrate it with this function stub to generate a full natural language response
+
+# Tie everything together here
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+    """
+    pass
+ChatGPT said:
+
+Perfect — let’s now integrate your parsed question info with the weather data to generate a natural language weather response.
+✅ What generate_weather_response() Should Do
+
+Using:
+
+    parsed_question → contains location, time_period, and attribute
+
+    weather_data → from get_weather_data(location)
+
+We’ll:
+
+    Check for errors in the weather data
+
+    Respond to specific attributes (temperature, rain, etc.)
+
+    Fallback to a general response if no attribute is specified
+
+    Optionally filter the forecast based on the date
+
+✅ Full Working Function: generate_weather_response()
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+    """
+    # Check if weather data has error
+    if 'error' in weather_data:
+        return f"Sorry, I couldn't retrieve weather data. {weather_data['error']}"
+
+    location = parsed_question.get('location', 'your location')
+    time_period = parsed_question.get('time_period', 'unspecified')
+    attribute = parsed_question.get('attribute', 'general')
+
+    # Handle current conditions if time_period is today
+    if time_period == datetime.now().date().isoformat():
+        current = weather_data['current']
+        response = f"Right now in {location}, it’s {current['condition']} with a temperature of {current['temperature_C']}°C, humidity at {current['humidity']}%, and wind speed of {current['wind_speed_kmph']} km/h."
+        return response
+
+    # Filter forecast data for matching date (if specified)
+    matching_days = []
+    for day in weather_data['forecast']:
+        if time_period in day['date'] or time_period == 'unspecified':
+            matching_days.append(day)
+
+    if not matching_days:
+        return f"I couldn’t find forecast data for {time_period} in {location}."
+
+    # Compose attribute-specific responses
+    if attribute == 'temperature':
+        response = f"Temperature forecast for {location}:\n"
+        for day in matching_days:
+            response += f"  {day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C\n"
+    elif attribute == 'rain':
+        response = f"Rain information is currently unavailable in the forecast data.\n"
+        # You could add precipitation data if available (e.g., `day['precip_mm']`)
+    else:
+        # General forecast
+        response = f"Weather forecast for {location}:\n"
+        for day in matching_days:
+            response += f"  {day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C\n"
+
+    return response
+
+✅ How to Use This in Your Chatbot Flow:
+
+question = input("Ask a weather question: ")
+parsed = parse_weather_question(question)
+
+if parsed and parsed['location']:
+    weather_data = get_weather_data(parsed['location'])
+    reply = generate_weather_response(parsed, weather_data)
+    print(reply)
+else:
+    print("Sorry, I couldn't understand the location in your question.")
+
+🔄 Next Steps (Optional Enhancements)
+
+    Add precipitation, wind, humidity to forecast if available.
+
+    Create visualizations (as you started earlier) and link them in generate_weather_response() if the user’s question implies “show me”.
+
+    Add handling for multiple days (like "weekend" returning 2 days).
+
+    Improve attribute detection using NLP libraries like spaCy.
+
+Would you like to see how to include visualizations directly in this chatbot flow?
+
+You said:
+rewrite it so temperature, rain, humidity, and wind are available
+
+ChatGPT said:
+
+Great! Let’s upgrade your generate_weather_response() function so that it supports all 4 main attributes:
+
+    temperature
+
+    rain
+
+    humidity
+
+    wind
+
+We'll assume your weather_data['forecast'] contains keys like:
+
+    'min_temp_C', 'max_temp_C'
+
+    'precip_mm' (for rain)
+
+    'humidity'
+
+    'wind_speed_kmph'
+
+If any of those are missing in your actual data, let me know and I’ll adjust accordingly.
+✅ Rewritten generate_weather_response() (Supports All Attributes)
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+    """
+    # Error handling
+    if 'error' in weather_data:
+        return f"Sorry, I couldn't retrieve weather data. {weather_data['error']}"
+
+    location = parsed_question.get('location', 'your location')
+    time_period = parsed_question.get('time_period', 'unspecified')
+    attribute = parsed_question.get('attribute', 'general')
+
+    # Handle current conditions (if today)
+    if time_period == datetime.now().date().isoformat():
+        current = weather_data['current']
+        if attribute == 'temperature':
+            return f"The current temperature in {location} is {current['temperature_C']}°C."
+        elif attribute == 'rain':
+            return f"It is currently {current['condition'].lower()} in {location}."
+        elif attribute == 'humidity':
+            return f"The current humidity in {location} is {current['humidity']}%."
+        elif attribute == 'wind':
+            return f"The current wind speed in {location} is {current['wind_speed_kmph']} km/h."
+        else:
+            return (f"Right now in {location}, it’s {current['condition'].lower()} with a temperature of "
+                    f"{current['temperature_C']}°C, humidity at {current['humidity']}%, and wind speed of "
+                    f"{current['wind_speed_kmph']} km/h.")
+
+    # Filter forecast for matching date or unspecified
+    forecast_days = [
+        day for day in weather_data['forecast']
+        if time_period in day['date'] or time_period == 'unspecified'
+    ]
+
+    if not forecast_days:
+        return f"I couldn’t find forecast data for {time_period} in {location}."
+
+    response_lines = []
+    if attribute == 'temperature':
+        response_lines.append(f"Temperature forecast for {location}:")
+        for day in forecast_days:
+            response_lines.append(f"{day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C")
+
+    elif attribute == 'rain':
+        response_lines.append(f"Rain forecast for {location}:")
+        for day in forecast_days:
+            precip = day.get('precip_mm', 'N/A')
+            response_lines.append(f"{day['date']}: {precip} mm of precipitation expected")
+
+    elif attribute == 'humidity':
+        response_lines.append(f"Humidity forecast for {location}:")
+        for day in forecast_days:
+            humidity = day.get('humidity', 'N/A')
+            response_lines.append(f"{day['date']}: {humidity}% humidity")
+
+    elif attribute == 'wind':
+        response_lines.append(f"Wind forecast for {location}:")
+        for day in forecast_days:
+            wind = day.get('wind_speed_kmph', 'N/A')
+            response_lines.append(f"{day['date']}: Wind speed of {wind} km/h")
+
+    else:
+        response_lines.append(f"General forecast for {location}:")
+        for day in forecast_days:
+            response_lines.append(f"{day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C")
+
+    return "\n".join(response_lines)
+
+✅ Requirements for Forecast Data
+
+Each day in weather_data['forecast'] should include:
+
+{
+    'date': '2025-05-21',
+    'min_temp_C': '12',
+    'max_temp_C': '24',
+    'precip_mm': '0.5',
+    'humidity': '60',
+    'wind_speed_kmph': '18'
+}
+
+If your data doesn’t yet include 'precip_mm', 'humidity', or 'wind_speed_kmph', you’ll need to update your get_weather_data() function to extract those from the API response.
+
+Want help adjusting get_weather_data() to include those values?
+rewrite it so you can only get temperaturie,wind,humidity,rain for current and the forecast is just temperature
+ChatGPT said:
+
+Got it! You want the chatbot to:
+
+    For current weather: return temperature, wind, humidity, and rain/condition (depending on the attribute asked).
+
+    For forecasted days: only provide temperature (min/max).
+
+✅ Rewritten generate_weather_response() (Current = All Attributes, Forecast = Temperature Only)
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+    """
+    # Handle errors
+    if 'error' in weather_data:
+        return f"Sorry, I couldn't retrieve weather data. {weather_data['error']}"
+
+    location = parsed_question.get('location', 'your location')
+    time_period = parsed_question.get('time_period', 'unspecified')
+    attribute = parsed_question.get('attribute', 'general')
+
+    today = datetime.now().date().isoformat()
+
+    # === CURRENT CONDITIONS ===
+    if time_period == today:
+        current = weather_data['current']
+        if attribute == 'temperature':
+            return f"The current temperature in {location} is {current['temperature_C']}°C."
+        elif attribute == 'rain':
+            return f"It is currently {current['condition'].lower()} in {location}."
+        elif attribute == 'humidity':
+            return f"The current humidity in {location} is {current['humidity']}%."
+        elif attribute == 'wind':
+            return f"The current wind speed in {location} is {current['wind_speed_kmph']} km/h."
+        else:
+            return (f"Right now in {location}, it's {current['condition'].lower()} with a temperature of "
+                    f"{current['temperature_C']}°C, humidity at {current['humidity']}%, and wind speed of "
+                    f"{current['wind_speed_kmph']} km/h.")
+
+    # === FORECASTED CONDITIONS ===
+    forecast_days = [
+        day for day in weather_data['forecast']
+        if time_period in day['date'] or time_period == 'unspecified'
+    ]
+
+    if not forecast_days:
+        return f"I couldn’t find forecast data for {time_period} in {location}."
+
+    # Only provide temperature forecast for future dates
+    response_lines = [f"Temperature forecast for {location}:"]
+    for day in forecast_days:
+        response_lines.append(f"{day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C")
+
+    return "\n".join(response_lines)
+
+✅ Behavior Summary:
+Time Period	Attribute	Output Type
+Today	temperature	Current temperature
+Today	humidity	Current humidity
+Today	wind	Current wind speed
+Today	rain	Current condition (e.g., cloudy)
+Forecast	any attribute	Only temperature forecast
+
+Let me know if you want to:
+
+    Add logic for ranges like “this weekend”
+
+    Extend forecast to include condition summaries (e.g., "sunny", "rainy")
+
+    Generate visualisations based on the same forecast data
+

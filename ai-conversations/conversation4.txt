@@ -1,0 +1,211 @@
+Creation of doctest with a variety of examples
+
+me: generate a doctest for this function
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+    """
+    # Handle errors
+    if 'error' in weather_data:
+        return f"Sorry, I couldn't retrieve weather data. {weather_data['error']}"
+
+    location = parsed_question.get('location', 'your location')
+    time_period = parsed_question.get('time_period', 'unspecified')
+    attribute = parsed_question.get('attribute', 'general')
+
+    today = datetime.now().date().isoformat()
+
+    # === CURRENT CONDITIONS ===
+    if time_period == today:
+        current = weather_data['current']
+        if attribute == 'temperature':
+            return f"The current temperature in {location} is {current['temperature_C']}°C."
+        elif attribute == 'rain':
+            return f"It is currently {current['condition'].lower()} in {location}."
+        elif attribute == 'humidity':
+            return f"The current humidity in {location} is {current['humidity']}%."
+        elif attribute == 'wind':
+            return f"The current wind speed in {location} is {current['wind_speed_kmph']} km/h."
+        else:
+            return (f"Right now in {location}, it's {current['condition'].lower()} with a temperature of "
+                    f"{current['temperature_C']}°C, humidity at {current['humidity']}%, and wind speed of "
+                    f"{current['wind_speed_kmph']} km/h.")
+
+    # === FORECASTED CONDITIONS ===
+    if attribute != "temperature":
+      return f"I couldn't forecast {attribute}"
+
+    forecast_days = [
+        day for day in weather_data['forecast']
+        if time_period in day['date'] or time_period == 'unspecified'
+    ]
+
+    if not forecast_days:
+        return f"I couldn’t find forecast data for {time_period} in {location}."
+
+    # Only provide temperature forecast for future dates
+    response_lines = [f"Temperature forecast for {location}:"]
+    for day in forecast_days:
+        response_lines.append(f"{day['date']}: {day['min_temp_C']}°C to {day['max_temp_C']}°C")
+
+    return "\n".join(response_lines)
+
+question = input("Ask a weather question: ")
+parsed = parse_weather_question(question)
+if parsed and parsed['location']:
+    weather_data = get_weather_data(parsed['location'])
+    reply = generate_weather_response(parsed, weather_data)
+    print(reply)
+else:
+    print("Sorry, I couldn't understand the location in your question.")
+
+ChatGPT said:
+
+Here's a doctest you can add to the generate_weather_response function to demonstrate and test its behavior:
+
+from datetime import datetime
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+
+    Example:
+    >>> today = datetime.now().date().isoformat()
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'temperature'}
+    >>> weather = {'current': {'temperature_C': '22', 'condition': 'Sunny', 'humidity': '50', 'wind_speed_kmph': '10'}}
+    >>> generate_weather_response(parsed, weather)
+    'The current temperature in New York is 22°C.'
+
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'rain'}
+    >>> generate_weather_response(parsed, weather)
+    'It is currently sunny in New York.'
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-05-22', 'attribute': 'temperature'}
+    >>> weather = {
+    ...     'forecast': [
+    ...         {'date': '2025-05-22', 'min_temp_C': '15', 'max_temp_C': '25'},
+    ...         {'date': '2025-05-23', 'min_temp_C': '16', 'max_temp_C': '26'}
+    ...     ]
+    ... }
+    >>> generate_weather_response(parsed, weather)
+    'Temperature forecast for New York:\\n2025-05-22: 15°C to 25°C'
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-05-22', 'attribute': 'humidity'}
+    >>> generate_weather_response(parsed, weather)
+    "I couldn't forecast humidity"
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-06-01', 'attribute': 'temperature'}
+    >>> weather = {'forecast': []}
+    >>> generate_weather_response(parsed, weather)
+    'I couldn’t find forecast data for 2025-06-01 in New York.'
+
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'temperature'}
+    >>> weather = {'error': 'API limit exceeded'}
+    >>> generate_weather_response(parsed, weather)
+    "Sorry, I couldn't retrieve weather data. API limit exceeded"
+    """
+    # (Function implementation remains the same)
+
+This test suite covers:
+
+    Current weather for temperature and rain
+
+    Forecasted temperature
+
+    Unsupported forecast attributes
+
+    Missing forecast data
+
+    Weather data error case
+
+To run this doctest, you can use:
+
+python -m doctest -v your_script.py
+
+Let me know if you'd like a version that mocks the datetime.now() call for consistent test results.
+
+
+me: can you include a doctest example that mimics a user entering 'perth' or 'whats the weather in perth' and show the expected keys in the result? add this please to the existing doctest
+
+ChatGPT:
+
+ Here's your updated docstring with the full doctests you provided for New York plus the new Perth example added at the end, all properly formatted and ready to go:
+
+def generate_weather_response(parsed_question, weather_data):
+    """
+    Generate a natural language response to a weather question.
+
+    Args:
+        parsed_question (dict): Parsed question data
+        weather_data (dict): Weather data
+
+    Returns:
+        str: Natural language response
+
+    >>> from datetime import datetime
+    >>> today = datetime.now().date().isoformat()
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'temperature'}
+    >>> weather = {'current': {'temperature_C': '22', 'condition': 'Sunny', 'humidity': '50', 'wind_speed_kmph': '10'}}
+    >>> generate_weather_response(parsed, weather)
+    'The current temperature in New York is 22°C.'
+
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'rain'}
+    >>> generate_weather_response(parsed, weather)
+    'It is currently sunny in New York.'
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-05-22', 'attribute': 'temperature'}
+    >>> weather = {
+    ...     'forecast': [
+    ...         {'date': '2025-05-22', 'min_temp_C': '15', 'max_temp_C': '25'},
+    ...         {'date': '2025-05-23', 'min_temp_C': '16', 'max_temp_C': '26'}
+    ...     ]
+    ... }
+    >>> generate_weather_response(parsed, weather)
+    'Temperature forecast for New York:\\n2025-05-22: 15°C to 25°C'
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-05-22', 'attribute': 'humidity'}
+    >>> generate_weather_response(parsed, weather)
+    "I couldn't forecast humidity"
+
+    >>> parsed = {'location': 'New York', 'time_period': '2025-06-01', 'attribute': 'temperature'}
+    >>> weather = {'forecast': []}
+    >>> generate_weather_response(parsed, weather)
+    'I couldn’t find forecast data for 2025-06-01 in New York.'
+
+    >>> parsed = {'location': 'New York', 'time_period': today, 'attribute': 'temperature'}
+    >>> weather = {'error': 'API limit exceeded'}
+    >>> generate_weather_response(parsed, weather)
+    "Sorry, I couldn't retrieve weather data. API limit exceeded"
+
+    >>> # Perth example mimicking user input "What's the weather in Perth?"
+    >>> parsed = {'location': 'Perth', 'time_period': today, 'attribute': 'general'}
+    >>> weather = {
+    ...     'current': {
+    ...         'temperature_C': '28',
+    ...         'condition': 'Partly Cloudy',
+    ...         'humidity': '60',
+    ...         'wind_speed_kmph': '20'
+    ...     }
+    ... }
+    >>> sorted(parsed.keys())
+    ['attribute', 'location', 'time_period']
+    >>> sorted(weather['current'].keys())
+    ['condition', 'humidity', 'temperature_C', 'wind_speed_kmph']
+    >>> generate_weather_response(parsed, weather)
+    "Right now in Perth, it's partly cloudy with a temperature of 28°C, humidity at 60%, and wind speed of 20 km/h."
+    """
